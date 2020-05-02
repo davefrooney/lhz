@@ -1,7 +1,7 @@
 {
   "domain": "lhz",
   "name": "LHZ",
-  "documentation": "https://www.home-assistant.io/components/dublin_bus_transport",
+  "documentation": "https://www.example.com",
   "requirements": [],
   "dependencies": [],
   "codeowners": []
