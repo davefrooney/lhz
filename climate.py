@@ -3,8 +3,6 @@ import requests
 import paho.mqtt.client as mqtt
 import time
 
-from homeassistant.components import climate
-
 #
 # LHZ Heating App
 #
@@ -14,7 +12,7 @@ from homeassistant.components import climate
 
 
 # Default Smartbox ID and first heater address
-dev_id = "smartboxid"
+dev_id = "xxxxxxxxxxxxxxxxx"
 addr = "2"
 
 # Global variables for heater control
@@ -63,7 +61,7 @@ data = ""
 
 # Default API urls
 token_url = "https://api-lhz.helki.com/client/token"
-api_url = "https://api-lhz.helki.com/api/v2/devs"
+api_url = "https://api-lhz.helki.com/api/v2/devs/"
 
 # Default MQTT topics
 haverland_token_topic = 'HAVERLAND/tokens/access_token'
@@ -104,7 +102,7 @@ def on_message(mqttc, obj, msg):
 
 	if msg.topic == "HAVERLAND/devs/htr/2/mode_command":
 		topic = "HAVERLAND/devs/htr/2/mode_state"
-		url = "https://api-lhz.helki.com/api/v2/devs/" + dev_id + "/htr/2/status"
+		url = api_url + dev_id + "/htr/2/status"
 		infot = mqttc.publish(topic, x, qos=0, retain=True)
 		if x == "heat":
 			m_2 = "manual"
@@ -139,7 +137,7 @@ def on_message(mqttc, obj, msg):
 			print(r['error'])
 
 	elif msg.topic == "HAVERLAND/devs/htr/2/temperature_command":
-		url = "https://api-lhz.helki.com/api/v2/devs/" + dev_id + "/htr/2/status"
+		url = api_url + dev_id + "/htr/2/status"
 		st_2 = x
 		try:
 			data = {'mode':m_2,'stemp':st_2,'units':units,'locked':l_2}
@@ -158,7 +156,7 @@ def on_message(mqttc, obj, msg):
 			print(r['error'])
 
 	elif msg.topic == "HAVERLAND/devs/htr/2/lock_command":
-		url = "https://api-lhz.helki.com/api/v2/devs/" + dev_id + "/htr/2/status"
+		url = api_url + dev_id + "/htr/2/status"
 		if x == "True":
 			l_2 = 'true'
 		else:
@@ -179,7 +177,7 @@ def on_message(mqttc, obj, msg):
 			print(r['error'])
 
 	elif msg.topic == "HAVERLAND/devs/htr/2/true_radiant_command":
-		url = "https://api-lhz.helki.com/api/v2/devs/" + dev_id + "/htr/2/setup"
+		url = api_url + dev_id + "/htr/2/setup"
 		if x == "True":
 			tr_2 = 'true'
 		else:
@@ -200,7 +198,7 @@ def on_message(mqttc, obj, msg):
 			print(r['error'])
 
 	elif msg.topic == "HAVERLAND/devs/htr/2/window_mode_command":
-		url = "https://api-lhz.helki.com/api/v2/devs/" + dev_id + "/htr/2/setup"
+		url = api_url + dev_id + "/htr/2/setup"
 		if x == "True":
 			wm_2 = 'true'
 		else:
@@ -221,7 +219,7 @@ def on_message(mqttc, obj, msg):
 			print(r['error'])
 
 	elif msg.topic == "HAVERLAND/devs/htr/2/away_offset_command":
-		url = "https://api-lhz.helki.com/api/v2/devs/" + dev_id + "/htr/2/setup"
+		url = api_url + dev_id + "/htr/2/setup"
 		ao_2 = str(x)
 		try:
 			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
@@ -240,7 +238,7 @@ def on_message(mqttc, obj, msg):
 			print(r['error'])
 
 	elif msg.topic == "HAVERLAND/devs/htr/2/radiator_priority_command":
-		url = "https://api-lhz.helki.com/api/v2/devs/" + dev_id + "/htr/2/setup"
+		url = api_url + dev_id + "/htr/2/setup"
 		rp_2 = x
 		try:
 			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
@@ -258,7 +256,532 @@ def on_message(mqttc, obj, msg):
 			print(r['error'])
 
 	elif msg.topic == "HAVERLAND/away_command":
-		url = "https://api-lhz.helki.com/api/v2/devs/" + dev_id + "/mgr/away_status"
+		url = api_url + dev_id + "/mgr/away_status"
+		if x == "True":
+			away = 'true'
+		else:
+			away = 'false'
+		try:
+			data = "{\"away\":" + away + ",\"enabled\":" + away_enabled + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (away_status) POST SUCCESSFUL")
+				get_away()
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (away_status) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError away_status')
+			print(r['error'])
+	if msg.topic == "HAVERLAND/devs/htr/3/mode_command":
+		topic = "HAVERLAND/devs/htr/3/mode_state"
+		url = api_url  + dev_id + "/htr/3/status"
+		infot = mqttc.publish(topic, x, qos=0, retain=True)
+		if x == "heat":
+			m_2 = "manual"
+			data = {'mode':'manual','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/3/power_command"
+			infot = mqttc.publish(topic, True, qos=0, retain=True)
+		elif x == "auto":
+			m_2 = "modified_auto"
+			data = {'mode':'modified_auto','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/3/power_command"
+			infot = mqttc.publish(topic, True, qos=0, retain=True)
+		else:
+			m_2 = "off"
+			data = {'mode':'off','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/3/power_command"
+			infot = mqttc.publish(topic, False, qos=0, retain=True)
+		try:
+			topic = "HAVERLAND/devs/htr/3/mode_state"
+			infot = mqttc.publish(topic, m_2, qos=0, retain=True)
+			data = json.dumps(data)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (mode_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (mode_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError mode_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/3/temperature_command":
+		url = api_url  + dev_id + "/htr/3/status"
+		st_2 = x
+		try:
+			data = {'mode':m_2,'stemp':st_2,'units':units,'locked':l_2}
+			data = json.dumps(data)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (temperature_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (temperature_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError temperature_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/3/lock_command":
+		url = api_url  + dev_id + "/htr/3/status"
+		if x == "True":
+			l_2 = 'true'
+		else:
+			l_2 = 'false'
+		try:
+			data = "{\"locked\":" + l_2 +"}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (lock_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (lock_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError lock_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/3/true_radiant_command":
+		url = api_url  + dev_id + "/htr/3/setup"
+		if x == "True":
+			tr_2 = 'true'
+		else:
+			tr_2 = 'false'
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (true_radiant_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (true_radiant_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError true_radiant_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/3/window_mode_command":
+		url = api_url  + dev_id + "/htr/3/setup"
+		if x == "True":
+			wm_2 = 'true'
+		else:
+			wm_2 = 'false'
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (window_mode_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (window_mode_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError window_mode_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/3/away_offset_command":
+		url = api_url  + dev_id + "/htr/3/setup"
+		ao_2 = str(x)
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (away_offset_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (away_offset_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError away_offset_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/3/radiator_priority_command":
+		url = api_url  + dev_id + "/htr/3/setup"
+		rp_2 = x
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (radiator_priority_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (radiator_priority_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError radiator_priority_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/away_command":
+		url = api_url  + dev_id + "/mgr/away_status"
+		if x == "True":
+			away = 'true'
+		else:
+			away = 'false'
+		try:
+			data = "{\"away\":" + away + ",\"enabled\":" + away_enabled + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (away_status) POST SUCCESSFUL")
+				get_away()
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (away_status) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError away_status')
+			print(r['error'])
+	if msg.topic == "HAVERLAND/devs/htr/4/mode_command":
+		topic = "HAVERLAND/devs/htr/4/mode_state"
+		url = api_url  + dev_id + "/htr/4/status"
+		infot = mqttc.publish(topic, x, qos=0, retain=True)
+		if x == "heat":
+			m_2 = "manual"
+			data = {'mode':'manual','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/4/power_command"
+			infot = mqttc.publish(topic, True, qos=0, retain=True)
+		elif x == "auto":
+			m_2 = "modified_auto"
+			data = {'mode':'modified_auto','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/4/power_command"
+			infot = mqttc.publish(topic, True, qos=0, retain=True)
+		else:
+			m_2 = "off"
+			data = {'mode':'off','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/4/power_command"
+			infot = mqttc.publish(topic, False, qos=0, retain=True)
+		try:
+			topic = "HAVERLAND/devs/htr/4/mode_state"
+			infot = mqttc.publish(topic, m_2, qos=0, retain=True)
+			data = json.dumps(data)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (mode_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (mode_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError mode_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/4/temperature_command":
+		url = api_url  + dev_id + "/htr/4/status"
+		st_2 = x
+		try:
+			data = {'mode':m_2,'stemp':st_2,'units':units,'locked':l_2}
+			data = json.dumps(data)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (temperature_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (temperature_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError temperature_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/4/lock_command":
+		url = api_url  + dev_id + "/htr/4/status"
+		if x == "True":
+			l_2 = 'true'
+		else:
+			l_2 = 'false'
+		try:
+			data = "{\"locked\":" + l_2 +"}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (lock_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (lock_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError lock_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/4/true_radiant_command":
+		url = api_url  + dev_id + "/htr/4/setup"
+		if x == "True":
+			tr_2 = 'true'
+		else:
+			tr_2 = 'false'
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (true_radiant_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (true_radiant_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError true_radiant_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/4/window_mode_command":
+		url = api_url  + dev_id + "/htr/4/setup"
+		if x == "True":
+			wm_2 = 'true'
+		else:
+			wm_2 = 'false'
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (window_mode_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (window_mode_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError window_mode_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/4/away_offset_command":
+		url = api_url  + dev_id + "/htr/4/setup"
+		ao_2 = str(x)
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (away_offset_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (away_offset_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError away_offset_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/4/radiator_priority_command":
+		url = api_url  + dev_id + "/htr/4/setup"
+		rp_2 = x
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (radiator_priority_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (radiator_priority_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError radiator_priority_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/away_command":
+		url = api_url  + dev_id + "/mgr/away_status"
+		if x == "True":
+			away = 'true'
+		else:
+			away = 'false'
+		try:
+			data = "{\"away\":" + away + ",\"enabled\":" + away_enabled + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (away_status) POST SUCCESSFUL")
+				get_away()
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (away_status) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError away_status')
+			print(r['error'])
+	if msg.topic == "HAVERLAND/devs/htr/5/mode_command":
+		topic = "HAVERLAND/devs/htr/5/mode_state"
+		url = api_url  + dev_id + "/htr/5/status"
+		infot = mqttc.publish(topic, x, qos=0, retain=True)
+		if x == "heat":
+			m_2 = "manual"
+			data = {'mode':'manual','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/5/power_command"
+			infot = mqttc.publish(topic, True, qos=0, retain=True)
+		elif x == "auto":
+			m_2 = "modified_auto"
+			data = {'mode':'modified_auto','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/5/power_command"
+			infot = mqttc.publish(topic, True, qos=0, retain=True)
+		else:
+			m_2 = "off"
+			data = {'mode':'off','stemp':st_2,'units':units,'locked':l_2}
+			topic = "HAVERLAND/devs/htr/5/power_command"
+			infot = mqttc.publish(topic, False, qos=0, retain=True)
+		try:
+			topic = "HAVERLAND/devs/htr/5/mode_state"
+			infot = mqttc.publish(topic, m_2, qos=0, retain=True)
+			data = json.dumps(data)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (mode_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (mode_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError mode_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/5/temperature_command":
+		url = api_url  + dev_id + "/htr/5/status"
+		st_2 = x
+		try:
+			data = {'mode':m_2,'stemp':st_2,'units':units,'locked':l_2}
+			data = json.dumps(data)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (temperature_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (temperature_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError temperature_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/5/lock_command":
+		url = api_url  + dev_id + "/htr/5/status"
+		if x == "True":
+			l_2 = 'true'
+		else:
+			l_2 = 'false'
+		try:
+			data = "{\"locked\":" + l_2 +"}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (lock_command_2) POST SUCCESSFUL")
+				get_status('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (lock_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError lock_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/5/true_radiant_command":
+		url = api_url  + dev_id + "/htr/5/setup"
+		if x == "True":
+			tr_2 = 'true'
+		else:
+			tr_2 = 'false'
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (true_radiant_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (true_radiant_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError true_radiant_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/5/window_mode_command":
+		url = api_url  + dev_id + "/htr/5/setup"
+		if x == "True":
+			wm_2 = 'true'
+		else:
+			wm_2 = 'false'
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (window_mode_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (window_mode_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError window_mode_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/5/away_offset_command":
+		url = api_url  + dev_id + "/htr/5/setup"
+		ao_2 = str(x)
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (away_offset_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (away_offset_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError away_offset_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/devs/htr/5/radiator_priority_command":
+		url = api_url  + dev_id + "/htr/5/setup"
+		rp_2 = x
+		try:
+			data = "{\"control_mode\":6,\"units\":\"" + units + "\",\"power\":\"1200.0\",\"offset\":\"0.0\",\"priority\":\"" + rp_2 + "\",\"away_mode\":0,\"away_offset\":\"" + ao_2 + "\",\"modified_auto_span\":0,\"window_mode_enabled\":" + wm_2 + ",\"true_radiant_enabled\":" + tr_2 + "}"
+			response = requests.post(url, data=data, headers=headers)
+			r = response.json()
+			if response.status_code == 201:
+				print(str(response.status_code) + " (radiator_priority_command_2) POST SUCCESSFUL")
+				get_setup('2')
+			elif response.status_code == 401:
+				print(str(response.status_code) + " (radiator_priority_command_2) POST FAILED " + r['error']['desc'])
+			else:
+				print(str(response.status_code) + " POST unknown")
+		except KeyError:
+			print('Caught KeyError radiator_priority_command_2')
+			print(r['error'])
+
+	elif msg.topic == "HAVERLAND/away_command":
+		url = api_url  + dev_id + "/mgr/away_status"
 		if x == "True":
 			away = 'true'
 		else:
@@ -393,8 +916,8 @@ def get_token():
 	return 1
 
 # GET tokens
-username = "lhzemail"
-password = "lhzpassword"
+username = "smartboxemail"
+password = "smartboxpassword"
 token_data = 'grant_type=password&username=' + username + '&password=' + password
 token_headers = {'authorization':'Basic NTRiY2NiZmI0MWE5YTUxMTNmMDQ4OGQwOnZkaXZkaQ==','Content-Type':'application/x-www-form-urlencoded','Accept':'application/json, text/plain, */*'}
 r = ""
