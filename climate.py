@@ -61,7 +61,7 @@ data = ""
 
 # Default API urls
 token_url = "https://api-lhz.helki.com/client/token"
-api_url = "https://api-lhz.helki.com/api/v2/devs/"
+api_url = "https://api-lhz.helki.com/api/v2/devs"
 
 # Default MQTT topics
 haverland_token_topic = 'HAVERLAND/tokens/access_token'
