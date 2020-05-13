@@ -940,7 +940,7 @@ mqttc.connect("10.10.10.5", 1883, 60)
 # GET Haverland data
 #get_devs()
 
-dev_url = api_url + "/" + dev_id
+dev_url = api_url + dev_id
 node_url = dev_url + "/mgr/nodes"
 away_url = dev_url + "/mgr/away_status"
 plimit_url = dev_url + "/htr_system/power_limit"
